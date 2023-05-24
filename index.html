@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    <title>Document</title>
+</head>
+
+<body>
+
+    <input type="number" id="y">
+
+
+    <button onclick="training()">Entrenar</button>
+
+    <button onclick="predict()">Predecir</button>
+
+    <div id="result"></div>
+
+
+    <script>
+        const model = tf.sequential();
+
+        model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
+
+        model.compile({ loss: 'meanSquaredError', optimizer: 'sgd' });
+
+        // Y = 2x - 5
+        const x = tf.tensor2d([-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5], [16, 1]);
+        const y = tf.tensor2d([-9, -7, -5, -3, -1, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21], [16, 1]);
+
+
+
+        const training = async () => {
+            const epochs = 200/*  parseInt(document.getElementById('epoch').value); */
+
+            const history = await model.fit(x, y, {
+                epochs: epochs,
+                callbacks: tfvis.show.fitCallbacks(
+                    { name: 'Training Performance' },
+                    ['loss', 'mse'],
+                    { height: 200, callbacks: ['onEpochEnd'] }
+                )
+            });
+
+            // Imprimir la pérdida final
+            console.log(`Final Loss: ${history.history.loss[epochs - 1].toFixed(4)}`);
+
+            alert("termino de entrenar");
+        }
+
+        const predict = () => {
+            const result = model.predict(tf.tensor2d([parseInt(document.getElementById('y').value)], [1, 1])).dataSync();
+
+            document.getElementById('result').innerHTML = result;
+        }
+    </script>
+</body>
+
+</html>
